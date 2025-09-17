@@ -378,7 +378,7 @@ export default function App() {
               Cancel
             </button>
             <button
-              onClick={() => createRound(name, minutes)} // 改成传参数
+              onClick={() => createRound(name, minutes)}
               style={modalBtnStyle}
               disabled={creating}
             >
