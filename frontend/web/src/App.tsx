@@ -40,28 +40,36 @@ export default function App() {
 
   // ----------------- Wallet -----------------
   useEffect(() => {
+    loadRounds();
     (async () => {
       const provider = await getProvider();
       if ((window as any).ethereum) {
         try {
-          const accounts: string[] = await (provider as any).send("eth_requestAccounts", []);
-          if (accounts && accounts[0]) setAccount(accounts[0]);
+          const accounts: string[] = await (provider as any).request({ method: "eth_accounts" });
+          if (accounts && accounts[0]) {
+            setAccount(accounts[0]);
+            await checkAdmin();
+          }
         } catch (e) {
-          console.warn("Wallet not authorized");
+          console.warn("Cannot get accounts", e);
         }
       }
-      await checkAdmin();
-      await loadRounds();
-      setLoading(false);
+  
+      setLoading(false); 
     })();
-
+  
     if ((window as any).ethereum) {
-      (window as any).ethereum.on("accountsChanged", async (accounts: string[]) => {
+      const handleAccountsChanged = async (accounts: string[]) => {
         setAccount(accounts[0] || "");
         await checkAdmin();
-      });
+      };
+      (window as any).ethereum.on("accountsChanged", handleAccountsChanged);
+  
+      return () => {
+        (window as any).ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      };
     }
-  }, []);
+  }, []);  
 
   const checkAdmin = async () => {
     try {
@@ -227,15 +235,24 @@ export default function App() {
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", maxWidth: "1200px", margin: "0 auto", background: "rgba(0,0,0,0.2)", borderRadius:12 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700 }}>FHE Lottery</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {isAdmin && <button onClick={()=>setShowCreateModal(true)} style={topButtonStyle}>🎲 Create Lottery</button>}
+          {isAdmin && (
+            <button onClick={()=>setShowCreateModal(true)} style={topButtonStyle}>
+              🎲 Create Lottery
+            </button>
+          )}
           {account ? (
             <>
-              <span style={{padding:"8px 16px", borderRadius:20, background:"#10b981", fontWeight:600, fontFamily:"monospace"}}>
+              <span style={{
+                padding:"8px 16px", borderRadius:20,
+                background:"#10b981", fontWeight:600, fontFamily:"monospace"
+              }}>
                 {`${account.slice(0,6)}...${account.slice(-4)}`}
               </span>
               <button onClick={onDisconnect} style={topButtonStyle}>Disconnect</button>
             </>
-          ) : <button onClick={onConnect} style={topButtonStyle}>Connect Wallet</button>}
+          ) : (
+            <button onClick={onConnect} style={topButtonStyle}>Connect Wallet</button>
+          )}
         </div>
       </header>
 
