@@ -48,7 +48,7 @@ export default function App() {
           const accounts: string[] = await (provider as any).request({ method: "eth_accounts" });
           if (accounts && accounts[0]) {
             setAccount(accounts[0]);
-            await checkAdmin();
+            await checkAdmin(accounts[0]);
           }
         } catch (e) {
           console.warn("Cannot get accounts", e);
@@ -61,7 +61,7 @@ export default function App() {
     if ((window as any).ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
         setAccount(accounts[0] || "");
-        await checkAdmin();
+        await checkAdmin(accounts[0]);
       };
       (window as any).ethereum.on("accountsChanged", handleAccountsChanged);
   
@@ -71,16 +71,17 @@ export default function App() {
     }
   }, []);  
 
-  const checkAdmin = async () => {
+  const checkAdmin = async (addr: string) => {
     try {
       const contract = await getContractReadOnly();
       const adminAddr = await contract.admin();
-      setIsAdmin(normAddr(account || "") === normAddr(adminAddr));
+      console.log("Wallet:", addr, "Admin:", adminAddr);
+      setIsAdmin(normAddr(addr) === normAddr(adminAddr));
     } catch {
       setIsAdmin(false);
     }
   };
-
+  
   const onConnect = async () => {
     if (!(window as any).ethereum) {
       alert("Please install MetaMask or other Ethereum wallet");
@@ -88,14 +89,20 @@ export default function App() {
     }
     const provider = await getProvider();
     const accounts: string[] = await (provider as any).send("eth_requestAccounts", []);
-    setAccount(accounts[0] || "");
-    await checkAdmin();
-  };
+    const acc = accounts[0] || "";
+    setAccount(acc);
+    await checkAdmin(acc);
+  };  
 
   const onDisconnect = () => {
     setAccount("");
     setIsAdmin(false);
+  
+    if ((window as any).ethereum && (window as any).ethereum.removeAllListeners) {
+      (window as any).ethereum.removeAllListeners("accountsChanged");
+    }
   };
+  
 
   // ----------------- Load Lottery Rounds -----------------
   const loadRounds = async () => {
@@ -148,23 +155,26 @@ export default function App() {
   };
 
   // ----------------- Create Lottery -----------------
-  const createRound = async () => {
-    if (!newRoundName) { alert("Please enter lottery name"); return; }
+  const createRound = async (name: string, minutes: number) => {
+    if (!name) {
+      alert("Please enter lottery name");
+      return;
+    }
     setCreating(true);
     try {
       const contract = await getContractWithSigner();
-      const drawTime = Math.floor(Date.now() / 1000) + newRoundMinutes * 60;
-      const tx = await contract.createRound(newRoundName, drawTime);
+      const drawTime = Math.floor(Date.now() / 1000) + minutes * 60;
+      const tx = await contract.createRound(name, drawTime);
       await tx.wait();
       setShowCreateModal(false);
-      setNewRoundName("");
-      setNewRoundMinutes(1);
       await loadRounds();
       alert("Lottery created!");
     } catch (e: any) {
       alert("Creation failed: " + (e?.message || e));
-    } finally { setCreating(false); }
-  };
+    } finally {
+      setCreating(false);
+    }
+  };  
 
   // ----------------- Buy Ticket -----------------
   const buyTicket = async (roundId: number) => {
@@ -204,21 +214,23 @@ export default function App() {
   };
 
   // ----------------- Admin Draw -----------------
-  const startDraw = async () => {
+  const startDraw = async (num: number) => {
     if (drawRoundId === null) return;
-    if (drawNumber < 1000 || drawNumber > 9999) { alert("Invalid number (1000-9999)"); return; }
+    if (num < 1000 || num > 9999) {
+      alert("Invalid number (1000-9999)");
+      return;
+    }
     try {
       const contract = await getContractWithSigner();
-      const tx = await contract.draw(drawRoundId, drawNumber);
+      const tx = await contract.draw(drawRoundId, num);
       await tx.wait();
       setShowDrawModal(false);
       alert("Draw success!");
       await loadRounds();
     } catch (e: any) {
-      console.error("Draw failed", e);
       alert("Draw failed: " + (e?.message || e));
     }
-  };
+  };  
 
   // ----------------- Auto Refresh -----------------
   React.useEffect(() => {
@@ -341,35 +353,74 @@ export default function App() {
 
   // ------------------- Modals -------------------
   function ModalCreate() {
+    const [name, setName] = React.useState("");
+    const [minutes, setMinutes] = React.useState(1);
+  
     return (
       <div style={modalOverlayStyle}>
         <div style={modalStyle}>
           <h2>Create Lottery</h2>
-          <input placeholder="Lottery Name" value={newRoundName} onChange={e=>setNewRoundName(e.target.value)} style={modalInputStyle}/>
-          <input type="number" placeholder="Countdown (min)" value={newRoundMinutes} onChange={e=>setNewRoundMinutes(Number(e.target.value))} style={{...modalInputStyle, width:120}}/>
-          <div style={{marginTop:16, display:"flex", justifyContent:"flex-end", gap:12}}>
-            <button onClick={()=>setShowCreateModal(false)} style={modalBtnStyle}>Cancel</button>
-            <button onClick={createRound} style={modalBtnStyle} disabled={creating}>{creating?"Creating...":"Create"}</button>
+          <input
+            placeholder="Lottery Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            style={modalInputStyle}
+          />
+          <input
+            type="number"
+            placeholder="Countdown (min)"
+            value={minutes}
+            onChange={e => setMinutes(Number(e.target.value))}
+            style={{ ...modalInputStyle, width: 120 }}
+          />
+          <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <button onClick={() => setShowCreateModal(false)} style={modalBtnStyle}>
+              Cancel
+            </button>
+            <button
+              onClick={() => createRound(name, minutes)} // 改成传参数
+              style={modalBtnStyle}
+              disabled={creating}
+            >
+              {creating ? "Creating..." : "Create"}
+            </button>
           </div>
         </div>
       </div>
     );
   }
+  
 
   function ModalDraw() {
+    const [localNumber, setLocalNumber] = React.useState<number>(0);
+  
     return (
       <div style={modalOverlayStyle}>
         <div style={modalStyle}>
           <h2>Enter Winning Number</h2>
-          <input type="number" placeholder="1000-9999" value={drawNumber} onChange={e=>setDrawNumber(Number(e.target.value))} style={modalInputStyle}/>
-          <div style={{marginTop:16, display:"flex", justifyContent:"flex-end", gap:12}}>
-            <button onClick={()=>setShowDrawModal(false)} style={modalBtnStyle}>Cancel</button>
-            <button onClick={startDraw} style={modalBtnStyle}>Draw</button>
+          <input
+            type="number"
+            placeholder="1000-9999"
+            value={localNumber}
+            onChange={(e) => setLocalNumber(Number(e.target.value))}
+            style={modalInputStyle}
+          />
+          <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <button onClick={() => setShowDrawModal(false)} style={modalBtnStyle}>
+              Cancel
+            </button>
+            <button
+              onClick={() => startDraw(localNumber)}
+              style={modalBtnStyle}
+            >
+              Draw
+            </button>
           </div>
         </div>
       </div>
     );
   }
+  
 
   function ModalWinners() {
     return (

@@ -1,110 +1,92 @@
-# FHEVM Hardhat Template
+# FHE Lottery Platform
 
-A Hardhat-based template for developing Fully Homomorphic Encryption (FHE) enabled Solidity smart contracts using the
-FHEVM protocol by Zama.
+A fully homomorphic encryption (FHE) enabled lottery system on FHEVM, providing transparent and verifiable lottery rounds on-chain.
 
-## Quick Start
+## 🌐 Live Demo
 
-For detailed instructions see:
-[FHEVM Hardhat Quick Start Tutorial](https://docs.zama.ai/protocol/solidity-guides/getting-started/quick-start-tutorial)
+**Try the live application:** [https://zama-fhe-lottery.vercel.app/](https://zama-fhe-lottery.vercel.app/)
+
+## 🏛️ Project Background
+
+Since ancient times, lotteries have been a popular way for people to chase their dreams and wealth.  
+However, they have always faced significant challenges:  
+- **Lack of transparency**: Participants cannot fully verify the fairness of the draw  
+- **Data tampering risks**: Results can be manipulated due to insider operations or system vulnerabilities  
+- **Privacy concerns**: Players' participation information is often exposed  
+
+FHE Lottery leverages **Fully Homomorphic Encryption (FHE)** technology to tackle these issues.  
+By performing computations on encrypted data directly on-chain, the system ensures:  
+
+- Transparency and verifiability of all lottery operations  
+- Immutable records that cannot be altered after creation  
+- Protection of user privacy while maintaining fairness  
+
+## 🚀 Features
+
+### Core Functionality
+- **Transparent Lottery System**: Manage rounds and ensure fair draws  
+- **Ticket Participation**: Users can join lotteries securely  
+- **Administrative Controls**: Authorized actions for creating rounds and managing draws  
+- **Result Visibility**: Draw outcomes are verifiable and publicly accessible  
+- **FHEVM Integration**: On-chain data encryption ensures trust and integrity  
+- **Modern Web Interface**: User-friendly frontend with wallet connectivity  
+
+### Privacy & Security
+- **Secure Smart Contracts**: Built with audited Solidity libraries  
+- **Wallet Connection**: Requires wallet integration for participation  
+- **Immutable Records**: Lottery data cannot be modified after creation
+
+## 🏗️ Architecture
+
+### Smart Contracts
+
+#### 1. **Lottery.sol** - Main Contract
+- Manages lottery rounds and tickets
+- Stores round data, prize, and winner info on-chain
+- Provides admin-only functions for creating rounds and drawing numbers
+
+### Frontend Application
+- **React + TypeScript**: User interface
+- **Ethers.js**: Blockchain interaction
+- **Vite**: Fast build and hot reload
+- **MetaMask Integration**: Connect wallet, buy tickets, draw numbers
+- **Responsive Design**: Works on desktop and mobile
+
+## 🔧 Technology Stack
+
+### Blockchain
+- **Solidity ^0.8.24**: Smart contract development
+- **FHEVM**: Fully Homomorphic Encryption Virtual Machine
+- **OpenZeppelin**: Secure contract libraries
+- **Hardhat**: Development and deployment framework
+
+### Frontend
+- **React 18 + TypeScript**
+- **Vite**
+- **Tailwind CSS** (optional styling)
+- **Ethers.js**
+- **MetaMask wallet integration**
+
+### Infrastructure
+- **Vercel**: Frontend deployment 
+- **Sepolia Testnet**: Development and testing
+
+## 📦 Installation
 
 ### Prerequisites
+- Node.js 20+
+- npm / yarn / pnpm
+- MetaMask wallet
 
-- **Node.js**: Version 20 or higher
-- **npm or yarn/pnpm**: Package manager
+### Setup
 
-### Installation
-
-1. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment variables**
-
-   ```bash
-   npx hardhat vars set MNEMONIC
-
-   # Set your Infura API key for network access
-   npx hardhat vars set INFURA_API_KEY
-
-   # Optional: Set Etherscan API key for contract verification
-   npx hardhat vars set ETHERSCAN_API_KEY
-   ```
-
-3. **Compile and test**
-
-   ```bash
-   npm run compile
-   npm run test
-   ```
-
-4. **Deploy to local network**
-
-   ```bash
-   # Start a local FHEVM-ready node
-   npx hardhat node
-   # Deploy to local network
-   npx hardhat deploy --network localhost
-   ```
-
-5. **Deploy to Sepolia Testnet**
-
-   ```bash
-   # Deploy to Sepolia
-   npx hardhat deploy --network sepolia
-   # Verify contract on Etherscan
-   npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
-   ```
-
-6. **Test on Sepolia Testnet**
-
-   ```bash
-   # Once deployed, you can run a simple test on Sepolia.
-   npx hardhat test --network sepolia
-   ```
-
-## 📁 Project Structure
-
-```
-fhevm-hardhat-template/
-├── contracts/           # Smart contract source files
-│   └── FHECounter.sol   # Example FHE counter contract
-├── deploy/              # Deployment scripts
-├── tasks/               # Hardhat custom tasks
-├── test/                # Test files
-├── hardhat.config.ts    # Hardhat configuration
-└── package.json         # Dependencies and scripts
-```
-
-## 📜 Available Scripts
-
-| Script             | Description              |
-| ------------------ | ------------------------ |
-| `npm run compile`  | Compile all contracts    |
-| `npm run test`     | Run all tests            |
-| `npm run coverage` | Generate coverage report |
-| `npm run lint`     | Run linting checks       |
-| `npm run clean`    | Clean build artifacts    |
-
-## 📚 Documentation
-
-- [FHEVM Documentation](https://docs.zama.ai/fhevm)
-- [FHEVM Hardhat Setup Guide](https://docs.zama.ai/protocol/solidity-guides/getting-started/setup)
-- [FHEVM Testing Guide](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat/write_test)
-- [FHEVM Hardhat Plugin](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat)
-
-## 📄 License
-
-This project is licensed under the BSD-3-Clause-Clear License. See the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/zama-ai/fhevm/issues)
-- **Documentation**: [FHEVM Docs](https://docs.zama.ai)
-- **Community**: [Zama Discord](https://discord.gg/zama)
-
----
-
-**Built with ❤️ by the Zama team**
+```bash
+npm install
+npm install --save-dev @nomicfoundation/hardhat-toolbox
+npm install @zama-fhe/relayer-sdk
+npm install ethers dotenv
+npm install react react-dom
+npx hardhat compile
+npx hardhat run deploy/deploy.ts --network sepolia
+cd frontend/web
+npm run dev
