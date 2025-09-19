@@ -1,5 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox"; // 包含 ethers、chai 等常用工具
+import "@nomicfoundation/hardhat-ethers";
 import "@fhevm/hardhat-plugin";            // FHE 插件
 
 const config: HardhatUserConfig = {

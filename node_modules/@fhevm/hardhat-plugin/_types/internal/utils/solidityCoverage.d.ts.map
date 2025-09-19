@@ -1,0 +1,1 @@
+{"version":3,"file":"solidityCoverage.d.ts","sourceRoot":"","sources":["../../../src/internal/utils/solidityCoverage.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,yBAAyB,EAAE,MAAM,eAAe,CAAC;AAK1D,wBAAgB,yBAAyB,CAAC,GAAG,EAAE,yBAAyB,GAAG,OAAO,CAGjF;AAgED;;;;GAIG;AACH,wBAAsB,6BAA6B,CAAC,GAAG,EAAE,yBAAyB,iBAwEjF"}

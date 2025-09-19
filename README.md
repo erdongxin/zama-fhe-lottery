@@ -6,6 +6,8 @@ A fully homomorphic encryption (FHE) enabled lottery system on FHEVM, providing 
 
 **Try the live application:** [https://zama-fhe-lottery.vercel.app/](https://zama-fhe-lottery.vercel.app/)
 
+![界面截图](./image.png)
+
 ## 🏛️ Project Background
 
 Since ancient times, lotteries have been a popular way for people to chase their dreams and wealth.  
